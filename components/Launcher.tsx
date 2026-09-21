@@ -215,7 +215,7 @@ export function Launcher({ services }: { services: Service[] }) {
               service={service}
               index={i}
               focused={i === index && !settingsOpen}
-              onFocus={() => setIndex(i)}
+              onPoint={() => setIndex(i)}
               onActivate={() => launch(service)}
             />
           ))}
@@ -238,7 +238,7 @@ export function Launcher({ services }: { services: Service[] }) {
         focusIndex={settingsIndex}
         status={status}
         onPick={pickSetting}
-        onFocusItem={setSettingsIndex}
+        onPointItem={setSettingsIndex}
       />
       <LaunchOverlay service={launching} />
     </div>

@@ -16,13 +16,13 @@ export function ServiceTile({
   focused,
   index,
   onActivate,
-  onFocus,
+  onPoint,
 }: {
   service: Service;
   focused: boolean;
   index: number;
   onActivate: () => void;
-  onFocus: () => void;
+  onPoint: () => void;
 }) {
   const seed = index * 3301 + 17;
   const frame = sketchRect(VB_W, VB_H, 20, seed, 3);
@@ -35,7 +35,9 @@ export function ServiceTile({
       type="button"
       tabIndex={-1}
       onClick={onActivate}
-      onMouseEnter={onFocus}
+      // Not onMouseEnter: that also fires when this window surfaces under a
+      // stationary cursor, which would silently move the selection.
+      onPointerMove={onPoint}
       aria-label={service.name}
       style={
         {

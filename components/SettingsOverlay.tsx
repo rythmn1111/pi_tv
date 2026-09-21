@@ -20,13 +20,13 @@ export function SettingsOverlay({
   focusIndex,
   status,
   onPick,
-  onFocusItem,
+  onPointItem,
 }: {
   open: boolean;
   focusIndex: number;
   status: { host: string; cpuTemp: number | null } | null;
   onPick: (action: SettingsAction) => void;
-  onFocusItem: (index: number) => void;
+  onPointItem: (index: number) => void;
 }) {
   return (
     <div
@@ -91,7 +91,7 @@ export function SettingsOverlay({
                     type="button"
                     tabIndex={-1}
                     onClick={() => onPick(action)}
-                    onMouseEnter={() => onFocusItem(i)}
+                    onPointerMove={() => onPointItem(i)}
                     className={[
                       "flex w-full items-baseline gap-3 rounded-lg px-4 py-[clamp(7px,0.9vh,14px)]",
                       "text-left transition-all duration-200",

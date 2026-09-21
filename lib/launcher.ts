@@ -32,8 +32,12 @@ function runDetached(script: string, args: string[]) {
   child.unref();
 }
 
-export function launchService(url: string, userAgent?: string) {
-  runDetached(SCRIPT, [url, userAgent ?? ""]);
+export function launchService(
+  url: string,
+  options: { kiosk?: boolean; userAgent?: string } = {},
+) {
+  const mode = options.kiosk === false ? "window" : "kiosk";
+  runDetached(SCRIPT, [url, mode, options.userAgent ?? ""]);
 }
 
 /** Closes any running service window and returns to the launcher. */

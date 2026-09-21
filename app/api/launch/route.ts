@@ -26,6 +26,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unknown service" }, { status: 404 });
   }
 
-  launchService(service.url, service.userAgent);
+  launchService(service.url, {
+    kiosk: service.kiosk,
+    userAgent: service.userAgent,
+  });
   return NextResponse.json({ ok: true, launched: service.id });
 }

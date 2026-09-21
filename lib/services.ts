@@ -10,8 +10,15 @@ export type Service = {
   color: string;
   /** Second stop of the tile gradient. */
   colorTo: string;
+  /** Verb for the headline: "Tonight we're <verb> ...". */
+  verb?: string;
   /** Optional per-service user agent override. */
   userAgent?: string;
+  /**
+   * Kiosk (the default) is fullscreen with no browser UI at all. Set false
+   * for the general browser tile, which needs a visible address bar.
+   */
+  kiosk?: boolean;
   enabled?: boolean;
 };
 
@@ -48,6 +55,16 @@ export const DEFAULT_SERVICES: Service[] = [
     url: "https://www.youtube.com",
     color: "#FF0033",
     colorTo: "#A3000F",
+  },
+  {
+    id: "browser",
+    name: "Browser",
+    tagline: "Everywhere else on the web",
+    url: "https://www.google.com",
+    color: "#D98324",
+    colorTo: "#8C4A12",
+    verb: "browsing",
+    kiosk: false,
   },
 ];
 

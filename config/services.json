@@ -37,6 +37,18 @@
       "colorTo": "#A3000F",
       "enabled": true,
       "$tip": "For the 10-foot remote-friendly YouTube interface, set url to https://www.youtube.com/tv and userAgent to the Smart TV string documented in the README."
+    },
+    {
+      "id": "browser",
+      "name": "Browser",
+      "tagline": "Everywhere else on the web",
+      "url": "https://www.google.com",
+      "color": "#D98324",
+      "colorTo": "#8C4A12",
+      "kiosk": false,
+      "enabled": true,
+      "$tip": "kiosk:false opens a normal maximised window with an address bar instead of a chrome-less fullscreen one.",
+      "verb": "browsing"
     }
   ]
 }

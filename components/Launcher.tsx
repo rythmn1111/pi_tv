@@ -206,7 +206,7 @@ export function Launcher({ services }: { services: Service[] }) {
       {/* Headline grows to absorb whatever height is left over. */}
       <section className="relative flex flex-1 flex-col justify-center">
         <p className="display text-[2.1vw] font-semibold leading-tight text-graphite max-[900px]:text-lg">
-          {greeting} we&rsquo;re watching
+          {greeting} we&rsquo;re {focused?.verb ?? "watching"}
         </p>
         <div key={focused?.id} className="animate-rise relative mt-[0.6vh] self-start">
           <h2 className="hand text-[6.4vw] font-bold leading-[0.92] text-ink max-[900px]:text-5xl">

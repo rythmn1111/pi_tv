@@ -103,6 +103,40 @@ function YouTubeMark({ className }: MarkProps) {
   );
 }
 
+function BrowserMark({ className }: MarkProps) {
+  const win =
+    "M9 5 L101 3 Q108 3 108 11 L109 79 Q109 86 101 86 L10 87 Q3 87 3 80 L4 11 Q4 5 9 5 Z";
+  const paper = {
+    fill: "none",
+    stroke: "#F7F0E3",
+    strokeWidth: 2.6,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+  } as const;
+  return (
+    <svg viewBox="-4 -4 118 98" className={className} aria-hidden>
+      <path d={win} fill="#D98324" opacity="0.9" transform="translate(3 3)" />
+      <path d={win} {...INK_STROKE} />
+      {/* Chrome: separator, three dots, address pill. */}
+      <path d="M5 26 L107 25" {...paper} />
+      <circle cx="14" cy="15" r="3.2" fill="#F7F0E3" />
+      <circle cx="24" cy="15" r="3.2" fill="#F7F0E3" />
+      <circle cx="34" cy="15" r="3.2" fill="#F7F0E3" />
+      <path
+        d="M46 9 L97 8 Q101 8 101 14 Q101 20 97 20 L46 21 Q42 21 42 15 Q42 9 46 9 Z"
+        {...paper}
+        strokeWidth="2.2"
+      />
+      {/* A globe, for want of anywhere in particular to go. */}
+      <circle cx="56" cy="55" r="19" {...paper} />
+      <path d="M56 36 C 46 44, 46 66, 56 74 C 66 66, 66 44, 56 36 Z" {...paper} strokeWidth="2.2" />
+      <path d="M37 55 L75 55" {...paper} strokeWidth="2.2" />
+      <path d="M40 45 Q 56 52, 72 45" {...paper} strokeWidth="2.2" />
+      <path d="M40 65 Q 56 58, 72 65" {...paper} strokeWidth="2.2" />
+    </svg>
+  );
+}
+
 function GenericMark({ className }: MarkProps) {
   const box =
     "M10 8 L90 6 Q97 6 97 14 L98 74 Q98 82 90 82 L11 83 Q3 83 3 75 L4 14 Q4 7 10 8 Z";
@@ -126,6 +160,7 @@ const MARKS: Record<string, (p: MarkProps) => React.ReactElement> = {
   prime: PrimeVideoMark,
   jiohotstar: JioHotstarMark,
   youtube: YouTubeMark,
+  browser: BrowserMark,
 };
 
 export function ServiceMark({ id, className }: { id: string; className?: string }) {

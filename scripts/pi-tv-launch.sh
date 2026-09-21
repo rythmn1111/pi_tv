@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# Open a streaming service in its own fullscreen, chrome-less window.
-# Usage: pi-tv-launch.sh <url> [user-agent]
+# Open a service in its own window.
+#   kiosk  - fullscreen, no browser UI at all (the streaming services)
+#   window - maximised with a visible address bar (the general browser tile)
+#
+# Usage: pi-tv-launch.sh <url> [kiosk|window] [user-agent]
 set -uo pipefail
 
-URL="${1:?usage: pi-tv-launch.sh <url> [user-agent]}"
-UA="${2:-}"
+URL="${1:?usage: pi-tv-launch.sh <url> [kiosk|window] [user-agent]}"
+MODE="${2:-kiosk}"
+UA="${3:-}"
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=pi-tv-env.sh
@@ -31,8 +35,14 @@ mapfile -t ARGS < <(pi_tv_common_flags)
 ARGS+=(
   --user-data-dir="$PI_TV_SERVICE_PROFILE"
   --class=pi-tv-service
-  --kiosk
 )
+if [[ "$MODE" == "window" ]]; then
+  # Chromium hides its toolbar in fullscreen, so a browsable window has to be
+  # maximised rather than fullscreen or there is nowhere to type a URL.
+  ARGS+=(--start-maximized)
+else
+  ARGS+=(--kiosk)
+fi
 [[ -n "$UA" ]] && ARGS+=(--user-agent="$UA")
 ARGS+=("$URL")
 

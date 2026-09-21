@@ -50,11 +50,17 @@ body {
   overscroll-behavior: none;
 }
 
-/* An appliance driven by a remote - no pointer or text-selection affordances. */
+/* An appliance driven by a remote - no pointer or text-selection affordances.
+   The remote has a touchpad though, so the cursor comes back while it is
+   actually being moved (see Launcher) and hides again on the next key press. */
 body {
   cursor: none;
   user-select: none;
   -webkit-user-select: none;
+}
+
+html[data-pointer="active"] body {
+  cursor: default;
 }
 
 * {

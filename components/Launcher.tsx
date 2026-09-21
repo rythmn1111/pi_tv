@@ -81,6 +81,10 @@ export function Launcher({ services }: { services: Service[] }) {
         setIndex((i) => Math.min(i + 1, services.length - 1));
       } else if (key === "ArrowLeft") {
         setIndex((i) => Math.max(i - 1, 0));
+      } else if (key === "Home" || key === "PageUp") {
+        setIndex(0);
+      } else if (key === "End" || key === "PageDown") {
+        setIndex(services.length - 1);
       } else if (key === "Enter" || key === " ") {
         if (focused) launch(focused);
       } else if (key === "ArrowDown" || key === "s" || key === "ContextMenu") {
@@ -101,6 +105,31 @@ export function Launcher({ services }: { services: Service[] }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [focused, launch, pickSetting, services, settingsIndex, settingsOpen]);
+
+  // ---- Show the cursor only while the touchpad is actually moving --------
+  useEffect(() => {
+    const root = document.documentElement;
+    let hideTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const reveal = () => {
+      root.dataset.pointer = "active";
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => delete root.dataset.pointer, 2500);
+    };
+    const hide = () => {
+      clearTimeout(hideTimer);
+      delete root.dataset.pointer;
+    };
+
+    window.addEventListener("pointermove", reveal);
+    window.addEventListener("keydown", hide);
+    return () => {
+      window.removeEventListener("pointermove", reveal);
+      window.removeEventListener("keydown", hide);
+      clearTimeout(hideTimer);
+      delete root.dataset.pointer;
+    };
+  }, []);
 
   // ---- Drop the splash once we're back from a service --------------------
   useEffect(() => {
@@ -225,11 +254,11 @@ export function Launcher({ services }: { services: Service[] }) {
       <footer className="relative flex shrink-0 items-end justify-between pt-[clamp(12px,2.4vh,36px)] text-ink/60">
         <div className="hand flex items-center gap-[clamp(12px,1.5vw,30px)] text-[1.15vw] max-[900px]:text-sm">
           <Hint keys="← →" label="pick one" />
-          <Hint keys="enter" label="watch it" />
+          <Hint keys="OK" label="watch it" />
           <Hint keys="↓" label="housekeeping" />
         </div>
         <p className="hand text-[1.05vw] text-ink/45 max-[900px]:text-xs">
-          <Key>super</Key> + <Key>esc</Key> brings you back here from anything
+          the <Key>⌂</Key> button — or <Key>super</Key>+<Key>esc</Key> — brings you back here
         </p>
       </footer>
 

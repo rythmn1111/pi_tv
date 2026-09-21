@@ -31,6 +31,23 @@ command -v chromium >/dev/null 2>&1 || command -v chromium-browser >/dev/null 2>
   || { echo "chromium is required: sudo apt install chromium"; exit 1; }
 ok "chromium present"
 
+# playerctl drives playback over MPRIS; wob draws the volume bar on the
+# layer-shell so it is visible over a fullscreen player. Both optional.
+MISSING=()
+command -v playerctl >/dev/null 2>&1 || MISSING+=(playerctl)
+command -v wob >/dev/null 2>&1 || MISSING+=(wob)
+command -v wpctl >/dev/null 2>&1 || MISSING+=(wireplumber)
+if (( ${#MISSING[@]} )); then
+  if sudo -n true 2>/dev/null; then
+    sudo -n apt-get install -y "${MISSING[@]}" >/dev/null 2>&1 \
+      && ok "installed ${MISSING[*]}" || warn "could not install ${MISSING[*]}"
+  else
+    warn "remote media keys need: sudo apt install ${MISSING[*]}"
+  fi
+else
+  ok "playerctl + wob present"
+fi
+
 # ---------------------------------------------------------------- build ------
 say "Building the launcher"
 cd "$REPO"
@@ -98,44 +115,15 @@ fi
 if ! grep -q "pi-tv-kiosk.sh" "$LABWC_DIR/autostart"; then
   printf '\n# Pi TV media center\n%s/scripts/pi-tv-kiosk.sh &\n' "$REPO" >> "$LABWC_DIR/autostart"
 fi
-ok "kiosk added to labwc autostart"
+if ! grep -q "pi-tv-osd.sh" "$LABWC_DIR/autostart"; then
+  printf '%s/scripts/pi-tv-osd.sh &\n' "$REPO" >> "$LABWC_DIR/autostart"
+fi
+ok "kiosk + volume OSD added to labwc autostart"
 
 # -------------------------------------------------------------- keybinds -----
-say "Global hotkey back to the launcher"
+say "Remote + keyboard hotkeys"
 [[ -f "$LABWC_DIR/rc.xml" ]] || cp /etc/xdg/labwc/rc.xml "$LABWC_DIR/rc.xml"
-HOME_SCRIPT="$REPO/scripts/pi-tv-home.sh" python3 - "$LABWC_DIR/rc.xml" <<'PY'
-import os, sys
-import xml.etree.ElementTree as ET
-
-NS = "http://openbox.org/3.4/rc"
-ET.register_namespace("", NS)          # keep the default xmlns on write
-q = lambda t: f"{{{NS}}}{t}"
-
-path = sys.argv[1]
-script = os.environ["HOME_SCRIPT"]
-tree = ET.parse(path)
-root = tree.getroot()
-
-kb = root.find(q("keyboard"))
-if kb is None:
-    kb = ET.SubElement(root, q("keyboard"))
-
-# Drop any binding we added on a previous run before re-adding.
-for bind in list(kb.findall(q("keybind"))):
-    if any((c.text or "").strip().endswith("pi-tv-home.sh")
-           for c in bind.iter(q("command"))):
-        kb.remove(bind)
-
-# Super+Escape is the documented one; the rest cover media-remote keypads.
-for key in ("W-Escape", "W-Home", "C-A-h", "XF86HomePage", "XF86Back"):
-    bind = ET.SubElement(kb, q("keybind"), {"key": key})
-    action = ET.SubElement(bind, q("action"), {"name": "Execute"})
-    ET.SubElement(action, q("command")).text = script
-
-ET.indent(tree, space="  ")
-tree.write(path, encoding="UTF-8", xml_declaration=True)
-print("  bound: W-Escape, W-Home, C-A-h, XF86HomePage, XF86Back")
-PY
+python3 "$HERE/labwc-keybinds.py" "$LABWC_DIR/rc.xml" "$HERE"
 ok "hotkeys written to $LABWC_DIR/rc.xml"
 
 # --------------------------------------------------------------- blanking ----
@@ -153,7 +141,9 @@ cat <<DONE
   Launcher      $(hostname -I 2>/dev/null | awk '{print $1}'):$PORT  (also http://localhost:$PORT)
   Service       systemctl --user status pi-tv
   Logs          journalctl --user -u pi-tv -f
-  Back home     Super+Escape from inside any streaming service
+  Back home     Super+Escape, or the remote's house button, from anywhere
+  Remote keys   volume / mute / play-pause / next / prev all work in-app
+  Unknown key?  ./scripts/pi-tv-remote-keys.sh and press it
 
   Reload the compositor to pick up the hotkey and autostart:
     kill -HUP \$(pgrep -x labwc)      # hotkeys only

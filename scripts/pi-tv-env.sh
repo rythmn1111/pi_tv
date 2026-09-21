@@ -8,14 +8,18 @@ PI_TV_DIR="${PI_TV_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 PI_TV_PORT="${PI_TV_PORT:-3000}"
 PI_TV_URL="${PI_TV_URL:-http://localhost:${PI_TV_PORT}}"
 
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+
 PI_TV_STATE="${PI_TV_STATE:-$HOME/.local/share/pi-tv}"
 # Separate profiles keep the launcher immune to whatever a service does, and
 # let us kill a service window without touching the launcher.
 PI_TV_LAUNCHER_PROFILE="${PI_TV_LAUNCHER_PROFILE:-$PI_TV_STATE/profiles/launcher}"
 PI_TV_SERVICE_PROFILE="${PI_TV_SERVICE_PROFILE:-$PI_TV_STATE/profiles/services}"
 
-export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
-export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+# Named pipe feeding the on-screen volume bar; absent means no OSD, which
+# every caller treats as fine.
+PI_TV_OSD_FIFO="${PI_TV_OSD_FIFO:-$XDG_RUNTIME_DIR/pi-tv-osd.fifo}"
 
 pi_tv_chromium() {
   command -v chromium 2>/dev/null || command -v chromium-browser 2>/dev/null

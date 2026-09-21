@@ -35,6 +35,17 @@ volume_pct() {
   awk '{ printf "%d\n", ($2 * 100) + 0.5 }' <<<"$out"
 }
 
+# A dummy sink means the TV was off when the session started. Reaching for
+# the volume is a good signal that someone is listening now.
+case "$ACTION" in
+  volume-up|volume-down|mute)
+    desc="$(wpctl inspect @DEFAULT_AUDIO_SINK@ 2>/dev/null | grep -m1 'node.description' | cut -d'"' -f2)"
+    if [[ -z "$desc" || "$desc" == *Dummy* || "$desc" == *"Auto Null"* ]]; then
+      "$HERE/pi-tv-audio.sh" >/dev/null 2>&1 &
+    fi
+    ;;
+esac
+
 case "$ACTION" in
   volume-up)
     wpctl set-mute "$SINK" 0 2>/dev/null

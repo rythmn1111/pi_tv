@@ -107,7 +107,10 @@ fi
 if ! grep -q "pi-tv-osd.sh" "$LABWC_DIR/autostart"; then
   printf '%s/scripts/pi-tv-osd.sh &\n' "$REPO" >> "$LABWC_DIR/autostart"
 fi
-ok "kiosk + volume OSD added to labwc autostart"
+if ! grep -q "pi-tv-audio.sh" "$LABWC_DIR/autostart"; then
+  printf '%s/scripts/pi-tv-audio.sh &\n' "$REPO" >> "$LABWC_DIR/autostart"
+fi
+ok "kiosk, volume OSD and audio check added to labwc autostart"
 
 # -------------------------------------------------------------- keybinds -----
 say "Remote + keyboard hotkeys"

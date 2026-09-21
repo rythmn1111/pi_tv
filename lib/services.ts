@@ -68,8 +68,14 @@ export const DEFAULT_SERVICES: Service[] = [
   },
 ];
 
-const CONFIG_PATH =
-  process.env.PI_TV_CONFIG ?? path.join(process.cwd(), "config", "services.json");
+// services.local.json is gitignored and wins when present, so customising the
+// line-up on the Pi does not collide with the next `git pull`.
+const CONFIG_PATHS = process.env.PI_TV_CONFIG
+  ? [process.env.PI_TV_CONFIG]
+  : [
+      path.join(process.cwd(), "config", "services.local.json"),
+      path.join(process.cwd(), "config", "services.json"),
+    ];
 
 function isService(value: unknown): value is Service {
   if (typeof value !== "object" || value === null) return false;
@@ -87,22 +93,25 @@ function isService(value: unknown): value is Service {
  * without rebuilding. Falls back to DEFAULT_SERVICES on any problem.
  */
 export async function getServices(): Promise<Service[]> {
-  try {
-    const raw = await readFile(/* turbopackIgnore: true */ CONFIG_PATH, "utf8");
-    const parsed: unknown = JSON.parse(raw);
-    const list = (parsed as { services?: unknown }).services;
-    if (!Array.isArray(list)) return DEFAULT_SERVICES;
+  for (const configPath of CONFIG_PATHS) {
+    try {
+      const raw = await readFile(/* turbopackIgnore: true */ configPath, "utf8");
+      const parsed: unknown = JSON.parse(raw);
+      const list = (parsed as { services?: unknown }).services;
+      if (!Array.isArray(list)) continue;
 
-    const services = list.filter(isService).map((s) => ({
-      ...s,
-      tagline: s.tagline ?? "",
-      color: s.color ?? "#6366F1",
-      colorTo: s.colorTo ?? s.color ?? "#312E81",
-    }));
+      const services = list.filter(isService).map((s) => ({
+        ...s,
+        tagline: s.tagline ?? "",
+        color: s.color ?? "#C4452E",
+        colorTo: s.colorTo ?? s.color ?? "#8C4A12",
+      }));
 
-    const usable = services.filter((s) => s.enabled !== false);
-    return usable.length > 0 ? usable : DEFAULT_SERVICES;
-  } catch {
-    return DEFAULT_SERVICES;
+      const usable = services.filter((s) => s.enabled !== false);
+      if (usable.length > 0) return usable;
+    } catch {
+      // Missing or malformed - fall through to the next candidate.
+    }
   }
+  return DEFAULT_SERVICES;
 }

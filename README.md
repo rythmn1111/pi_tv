@@ -68,43 +68,87 @@ sudo systemctl restart lightdm
 
 ## Controls
 
+Driven by a cheap Bluetooth media remote (the Rii-style mini keyboard with a
+touchpad), or any keyboard.
+
+### On the launcher
+
 | Key | Action |
 | --- | --- |
 | `←` `→` | move between services |
-| `Enter` | open the focused service |
-| `1`–`4` | jump straight to a service |
+| `OK` / `Enter` | open the focused service |
+| `Home` `End` / `PgUp` `PgDn` | jump to the first / last service |
+| `1`–`9` | jump straight to a service |
 | `↓` or `S` | housekeeping panel (restart / reboot / shut down) |
-| `Esc` | close the panel |
-| **`Super`+`Esc`** | **leave a service, return to the launcher** |
+| `Esc` / `BACK` | close the panel |
 
-`Super`+`Home`, `Ctrl`+`Alt`+`H`, and the `HomePage` / `Back` media keys do the
-same thing as `Super`+`Esc`, for remotes that have them.
+The touchpad works too: the cursor is hidden by default and only appears while
+you are actually moving it, then fades out again on the next key press.
+
+### Everywhere, including inside Netflix
+
+These are bound in the compositor, so they work even though the launcher is not
+the focused window:
+
+| Button | Action |
+| --- | --- |
+| **⌂ (house)** | **back to the launcher** |
+| `BACK` | back to the launcher |
+| `Super`+`Esc`, `Super`+`Home`, `Ctrl`+`Alt`+`H` | back to the launcher |
+| `V+` `V−` | volume, with an on-screen bar that draws over fullscreen video |
+| mute | toggle mute |
+| `▶‖` | play / pause |
+| `⏮` `⏭` | previous / next |
+
+Volume goes through `wpctl`, playback through `playerctl` over MPRIS — Chromium
+publishes each playing tab as an MPRIS player, so this drives Netflix, YouTube
+and the rest without them knowing.
+
+The volume bar is [`wob`](https://github.com/francma/wob), which draws on the
+Wayland layer-shell. That matters: the desktop panel's own volume indicator is
+*behind* a fullscreen player, which is exactly when you need to see it.
+
+### A different remote?
+
+Remotes disagree about which keysym a button sends. Run:
+
+```bash
+./scripts/pi-tv-remote-keys.sh
+```
+
+press the button, and put the name it prints into `~/.config/labwc/rc.xml`
+(or into `HOME_KEYS` / `MEDIA_KEYS` in `scripts/labwc-keybinds.py` and re-run
+the installer).
 
 ## Customising
 
-Edit `config/services.json` on the Pi and refresh — no rebuild needed, the page
-re-reads the file on every load.
+Copy `config/services.json` to `config/services.local.json` and edit that. The
+local file wins when present and is gitignored, so your line-up survives a
+`git pull`. Either way the page re-reads it on every load — no rebuild.
 
 ```jsonc
 {
   "services": [
     {
-      "id": "netflix",          // "netflix" | "prime" | "jiohotstar" | "youtube"
-                                // get a drawn logo; anything else gets a
-                                // generic hand-drawn tile
+      "id": "netflix",          // netflix | prime | jiohotstar | youtube |
+                                // browser each get a drawn mark; anything
+                                // else gets a generic hand-drawn tile
       "name": "Netflix",
       "tagline": "Films, series and everything in between",
       "url": "https://www.netflix.com",
       "color": "#E50914",       // focus wash + headline accent
       "colorTo": "#7B0710",
       "enabled": true,
+      "verb": "watching",       // "Tonight we're <verb> ..." in the headline
+      "kiosk": true,            // false = maximised window with an address
+                                // bar, which is how the Browser tile works
       "userAgent": ""           // optional per-service UA override
     }
   ]
 }
 ```
 
-Four tiles fit comfortably; five or six still lay out, they just get narrower.
+Five tiles fit comfortably; six or seven still lay out, they just get narrower.
 
 ### YouTube's 10-foot interface
 
@@ -131,6 +175,14 @@ that's **L3 only**, which those services cap at roughly 720p — this is a
 platform limit, not something the launcher can work around. YouTube is
 unaffected and plays at full resolution.
 
+## A note on voice control
+
+There isn't any, and it can't be added as things stand: the remote has no
+microphone (its HID descriptor advertises no `KEY_VOICECOMMAND`, and PipeWire
+reports zero audio sources on the Pi). Adding it would mean a USB microphone
+plus a speech-to-text stage. The remote's volume and playback keys are all
+wired up instead — see [Controls](#controls).
+
 ## Development
 
 ```bash
@@ -151,5 +203,6 @@ app/
 components/       Launcher, tiles, overlays, doodles, brand marks
 config/           services.json - the bit you edit
 lib/              config loader, spawn helpers, sketch path generators
-scripts/          install, uninstall, kiosk, launch, home
+scripts/          install, uninstall, kiosk, launch, home, media, OSD,
+                  labwc keybinds, remote key discovery
 ```

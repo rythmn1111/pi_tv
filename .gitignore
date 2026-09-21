@@ -42,3 +42,5 @@ next-env.d.ts
 
 # Pi TV
 .env*.local
+# Local service line-up, so customising on the Pi survives a git pull
+config/services.local.json

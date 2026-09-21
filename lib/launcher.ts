@@ -1,14 +1,6 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
 
-const SCRIPT =
-  process.env.PI_TV_LAUNCH_SCRIPT ??
-  path.join(process.cwd(), "scripts", "pi-tv-launch.sh");
-
-const HOME_SCRIPT =
-  process.env.PI_TV_HOME_SCRIPT ??
-  path.join(process.cwd(), "scripts", "pi-tv-home.sh");
-
 const DESKTOP_SCRIPT =
   process.env.PI_TV_DESKTOP_SCRIPT ??
   path.join(process.cwd(), "scripts", "pi-tv-desktop.sh");
@@ -34,19 +26,6 @@ function runDetached(script: string, args: string[]) {
     env: sessionEnv(),
   });
   child.unref();
-}
-
-export function launchService(
-  url: string,
-  options: { kiosk?: boolean; userAgent?: string } = {},
-) {
-  const mode = options.kiosk === false ? "window" : "kiosk";
-  runDetached(SCRIPT, [url, mode, options.userAgent ?? ""]);
-}
-
-/** Closes any running service window and returns to the launcher. */
-export function returnHome() {
-  runDetached(HOME_SCRIPT, []);
 }
 
 export type SystemAction = "reboot" | "shutdown" | "restart-app" | "desktop";

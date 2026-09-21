@@ -41,14 +41,14 @@
     {
       "id": "browser",
       "name": "Browser",
-      "tagline": "Everywhere else on the web",
+      "tagline": "Search the web, or anywhere else you fancy",
       "url": "https://www.google.com",
       "color": "#D98324",
       "colorTo": "#8C4A12",
-      "kiosk": false,
       "enabled": true,
-      "$tip": "kiosk:false opens a normal maximised window with an address bar instead of a chrome-less fullscreen one.",
-      "verb": "browsing"
+      "$tip": "row:2 puts a tile on the second line. Everything else defaults to row 1.",
+      "verb": "browsing",
+      "row": 2
     }
   ]
 }

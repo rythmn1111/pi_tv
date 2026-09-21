@@ -20,7 +20,11 @@ def q(tag: str) -> str:
 
 # Every way back to the launcher. XF86HomePage is the remote's house button;
 # XF86Back is its BACK key. Super+Escape is the one for a plain keyboard.
-HOME_KEYS = ["W-Escape", "W-Home", "C-A-h", "XF86HomePage", "XF86Back"]
+HOME_KEYS = ["W-Escape", "W-Home", "C-A-h", "XF86HomePage"]
+
+# One step back in history, the way a TV remote's back button should work:
+# out of a video, not all the way to the menu. "e" is KEY_WWW on this remote.
+BACK_KEYS = ["XF86WWW", "XF86Back", "A-Left"]
 
 # The envelope button drops to the ordinary desktop, and brings the kiosk
 # back when pressed again.
@@ -65,6 +69,7 @@ def main() -> int:
     home_script = f"{scripts_dir}/pi-tv-home.sh"
     media_script = f"{scripts_dir}/pi-tv-media.sh"
     desktop_script = f"{scripts_dir}/pi-tv-desktop.sh"
+    back_script = f"{scripts_dir}/pi-tv-back.sh"
 
     tree = ET.parse(rc_path)
     root = tree.getroot()
@@ -72,7 +77,7 @@ def main() -> int:
     if keyboard is None:
         keyboard = ET.SubElement(root, q("keyboard"))
 
-    managed = set(HOME_KEYS) | set(DESKTOP_KEYS) | set(MEDIA_KEYS)
+    managed = set(HOME_KEYS) | set(BACK_KEYS) | set(DESKTOP_KEYS) | set(MEDIA_KEYS)
     removed = 0
     for keybind in list(keyboard.findall(q("keybind"))):
         ours = any("pi-tv-" in c for c in commands_of(keybind))
@@ -84,6 +89,8 @@ def main() -> int:
 
     for key in HOME_KEYS:
         bind(keyboard, key, home_script)
+    for key in BACK_KEYS:
+        bind(keyboard, key, back_script)
     for key in DESKTOP_KEYS:
         bind(keyboard, key, desktop_script)
     for key, action in MEDIA_KEYS.items():
@@ -93,7 +100,7 @@ def main() -> int:
     tree.write(rc_path, encoding="UTF-8", xml_declaration=True)
 
     print(
-        f"  replaced {removed}, bound {len(HOME_KEYS)} home"
+        f"  replaced {removed}, bound {len(HOME_KEYS)} home + {len(BACK_KEYS)} back"
         f" + {len(DESKTOP_KEYS)} desktop + {len(MEDIA_KEYS)} media keys"
     )
     return 0

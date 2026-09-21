@@ -56,23 +56,11 @@ cd "$REPO"
 "$BUN" run build
 ok "built"
 
-# ------------------------------------------------------------- profiles ------
-say "Browser profiles"
-mkdir -p "$STATE/profiles/launcher" "$STATE/profiles/services"
-# Reuse the Widevine CDM the system Chromium already fetched, so DRM playback
-# works on the very first launch instead of after a component update.
-for SRC in "$HOME/.config/chromium/WidevineCdm" /opt/WidevineCdm; do
-  if [[ -d "$SRC" && ! -d "$STATE/profiles/services/WidevineCdm" ]]; then
-    cp -r "$SRC" "$STATE/profiles/services/WidevineCdm" 2>/dev/null && ok "seeded Widevine from $SRC" && break
-  fi
-done
-[[ -d "$STATE/profiles/services/WidevineCdm" ]] || warn "no Widevine CDM found - DRM services may not play"
-
-# A TV has no business asking about the camera. Seed each profile's content
-# settings to "block" so the desktop portal never throws a modal over a film.
-python3 "$HERE/seed-profile-prefs.py" "$STATE/profiles/launcher" "$STATE/profiles/services" \
-  && ok "camera / mic / notification prompts blocked" \
-  || warn "could not seed profile preferences"
+# ------------------------------------------------------------- profile -------
+say "Browser profile"
+# Pi TV uses your ordinary Chromium profile on purpose, so the extensions and
+# sign-ins you already have apply to everything it opens. Nothing to set up.
+ok "using $HOME/.config/chromium"
 
 # -------------------------------------------------------------- systemd ------
 say "Web server service"
@@ -142,7 +130,8 @@ cat <<DONE
   Launcher      $(hostname -I 2>/dev/null | awk '{print $1}'):$PORT  (also http://localhost:$PORT)
   Service       systemctl --user status pi-tv
   Logs          journalctl --user -u pi-tv -f
-  Back home     Super+Escape, or the remote's house button, from anywhere
+  Back home     the remote's house button, or Super+Escape
+  Go back       the remote's "e" button (one step, not all the way home)
   Remote keys   volume / mute / play-pause / next / prev all work in-app
   Desktop       the remote's envelope button toggles kiosk <-> desktop
   Unknown key?  ./scripts/pi-tv-remote-keys.sh and press it

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Clock, greetingFor, useNow } from "@/components/Clock";
 import { Bird, Coffee, Popcorn, RetroTV, Sparkle } from "@/components/Doodles";
 import { LaunchOverlay } from "@/components/LaunchOverlay";
@@ -15,33 +15,39 @@ import type { Service } from "@/lib/services";
 
 type Status = { host: string; cpuTemp: number | null };
 
-/** How long "Opening …" stays up if the service window never appears. */
-const LAUNCH_TIMEOUT_MS = 14_000;
-
 export function Launcher({ services }: { services: Service[] }) {
-  const [index, setIndex] = useState(0);
+  // Row 2 keeps utilities off the main strip, so a long line-up does not
+  // squash everything into one thin band.
+  const rows = useMemo(() => {
+    const first = services.filter((s) => (s.row ?? 1) !== 2);
+    const second = services.filter((s) => s.row === 2);
+    return second.length > 0 ? [first, second] : [first];
+  }, [services]);
+
+  const [focus, setFocus] = useState({ r: 0, c: 0 });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsIndex, setSettingsIndex] = useState(0);
   const [launching, setLaunching] = useState<Service | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
-  const launchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const focused = services[index] ?? services[0];
   const now = useNow();
   const greeting = now ? greetingFor(now) : "Tonight";
+  const focused = rows[focus.r]?.[focus.c] ?? rows[0][0];
+  const columns = rows[0].length;
 
+  /**
+   * One Chromium window on one profile means "opening" a service is just a
+   * navigation - no process to spawn. The remote's back and home keys steer
+   * this same window back again over the DevTools protocol.
+   */
   const launch = useCallback(
     (service: Service) => {
       if (launching) return;
       setLaunching(service);
-      void fetch("/api/launch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: service.id }),
-      }).catch(() => undefined);
-
-      if (launchTimer.current) clearTimeout(launchTimer.current);
-      launchTimer.current = setTimeout(() => setLaunching(null), LAUNCH_TIMEOUT_MS);
+      // Let the splash paint before the browser tears this page down.
+      setTimeout(() => {
+        window.location.href = service.url;
+      }, 140);
     },
     [launching],
   );
@@ -77,25 +83,40 @@ export function Launcher({ services }: { services: Service[] }) {
         return;
       }
 
-      if (key === "ArrowRight") {
-        setIndex((i) => Math.min(i + 1, services.length - 1));
-      } else if (key === "ArrowLeft") {
-        setIndex((i) => Math.max(i - 1, 0));
-      } else if (key === "Home" || key === "PageUp") {
-        setIndex(0);
-      } else if (key === "End" || key === "PageDown") {
-        setIndex(services.length - 1);
-      } else if (key === "Enter" || key === " ") {
-        if (focused) launch(focused);
-      } else if (key === "ArrowDown" || key === "s" || key === "ContextMenu") {
+      const openSettings = () => {
         setSettingsIndex(0);
         setSettingsOpen(true);
+      };
+
+      if (key === "ArrowRight") {
+        setFocus((f) => ({ ...f, c: Math.min(f.c + 1, rows[f.r].length - 1) }));
+      } else if (key === "ArrowLeft") {
+        setFocus((f) => ({ ...f, c: Math.max(f.c - 1, 0) }));
+      } else if (key === "ArrowDown") {
+        // Past the last row, down opens housekeeping.
+        if (focus.r + 1 < rows.length) {
+          setFocus((f) => ({
+            r: f.r + 1,
+            c: Math.min(f.c, rows[f.r + 1].length - 1),
+          }));
+        } else {
+          openSettings();
+        }
+      } else if (key === "ArrowUp") {
+        setFocus((f) =>
+          f.r === 0 ? f : { r: f.r - 1, c: Math.min(f.c, rows[f.r - 1].length - 1) },
+        );
+      } else if (key === "Home" || key === "PageUp") {
+        setFocus({ r: 0, c: 0 });
+      } else if (key === "End" || key === "PageDown") {
+        setFocus({ r: rows.length - 1, c: rows[rows.length - 1].length - 1 });
+      } else if (key === "Enter" || key === " ") {
+        if (focused) launch(focused);
+      } else if (key === "s" || key === "ContextMenu") {
+        openSettings();
       } else if (/^[1-9]$/.test(key)) {
         const target = services[Number(key) - 1];
-        if (target) {
-          setIndex(Number(key) - 1);
-          launch(target);
-        }
+        if (target) launch(target);
       } else {
         return;
       }
@@ -104,7 +125,7 @@ export function Launcher({ services }: { services: Service[] }) {
 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [focused, launch, pickSetting, services, settingsIndex, settingsOpen]);
+  }, [focus.r, focused, launch, pickSetting, rows, services, settingsIndex, settingsOpen]);
 
   // ---- Show the cursor only while the touchpad is actually moving --------
   useEffect(() => {
@@ -131,19 +152,6 @@ export function Launcher({ services }: { services: Service[] }) {
     };
   }, []);
 
-  // ---- Drop the splash once we're back from a service --------------------
-  useEffect(() => {
-    function clearLaunch() {
-      if (document.visibilityState === "visible") setLaunching(null);
-    }
-    window.addEventListener("focus", clearLaunch);
-    document.addEventListener("visibilitychange", clearLaunch);
-    return () => {
-      window.removeEventListener("focus", clearLaunch);
-      document.removeEventListener("visibilitychange", clearLaunch);
-    };
-  }, []);
-
   useEffect(() => {
     let alive = true;
     const load = async () => {
@@ -163,15 +171,15 @@ export function Launcher({ services }: { services: Service[] }) {
   }, []);
 
   return (
-    <div className="relative flex h-full flex-col px-[clamp(26px,3.4vw,72px)] py-[clamp(14px,2.4vh,38px)]">
+    <div className="relative flex h-full flex-col px-[clamp(26px,3.4vw,72px)] py-[clamp(14px,2.2vh,34px)]">
       {/* Doodles drawn onto the page itself, filling the space beside the headline. */}
       <div className="pointer-events-none absolute inset-0 text-ink/25" aria-hidden>
-        <RetroTV className="absolute right-[5.5vw] top-[22vh] h-[26vh] w-auto -rotate-6" />
-        <Popcorn className="absolute right-[22vw] top-[33vh] h-[17vh] w-auto rotate-6" />
-        <Bird className="animate-bob absolute right-[31vw] top-[23vh] h-[8vh] w-auto" />
-        <Coffee className="absolute right-[34vw] top-[41vh] h-[11vh] w-auto -rotate-3 opacity-80" />
-        <Sparkle className="absolute right-[19vw] top-[19vh] h-[3.6vh] w-auto" />
-        <Sparkle className="absolute right-[3.4vw] top-[50vh] h-[2.8vh] w-auto opacity-75" />
+        <RetroTV className="absolute right-[5.5vw] top-[20vh] h-[22vh] w-auto -rotate-6" />
+        <Popcorn className="absolute right-[21vw] top-[29vh] h-[14vh] w-auto rotate-6" />
+        <Bird className="animate-bob absolute right-[29vw] top-[20vh] h-[7vh] w-auto" />
+        <Coffee className="absolute right-[32vw] top-[35vh] h-[10vh] w-auto -rotate-3 opacity-80" />
+        <Sparkle className="absolute right-[18vw] top-[17vh] h-[3.2vh] w-auto" />
+        <Sparkle className="absolute right-[3.4vw] top-[44vh] h-[2.6vh] w-auto opacity-75" />
       </div>
 
       <header className="relative flex shrink-0 items-start justify-between">
@@ -204,12 +212,12 @@ export function Launcher({ services }: { services: Service[] }) {
       </header>
 
       {/* Headline grows to absorb whatever height is left over. */}
-      <section className="relative flex flex-1 flex-col justify-center">
+      <section className="relative flex min-h-0 flex-1 flex-col justify-center">
         <p className="display text-[2.1vw] font-semibold leading-tight text-graphite max-[900px]:text-lg">
           {greeting} we&rsquo;re {focused?.verb ?? "watching"}
         </p>
         <div key={focused?.id} className="animate-rise relative mt-[0.6vh] self-start">
-          <h2 className="hand text-[6.4vw] font-bold leading-[0.92] text-ink max-[900px]:text-5xl">
+          <h2 className="hand text-[5vw] font-bold leading-[0.92] text-ink max-[900px]:text-5xl">
             {focused?.name}
           </h2>
           <svg
@@ -228,37 +236,40 @@ export function Launcher({ services }: { services: Service[] }) {
             />
           </svg>
         </div>
-        <p className="mt-[3.2vh] max-w-[44vw] text-[1.05vw] italic leading-snug text-graphite/70 max-[900px]:text-sm">
+        <p className="mt-[2.2vh] max-w-[44vw] text-[1.05vw] italic leading-snug text-graphite/70 max-[900px]:text-sm">
           {focused?.tagline}
         </p>
       </section>
 
-      <section className="relative shrink-0">
-        <div
-          className="grid gap-[clamp(16px,1.8vw,36px)]"
-          style={{ gridTemplateColumns: `repeat(${services.length}, minmax(0, 1fr))` }}
-        >
-          {services.map((service, i) => (
-            <ServiceTile
-              key={service.id}
-              service={service}
-              index={i}
-              focused={i === index && !settingsOpen}
-              onPoint={() => setIndex(i)}
-              onActivate={() => launch(service)}
-            />
-          ))}
-        </div>
+      <section className="relative flex shrink-0 flex-col gap-[clamp(12px,1.5vw,28px)]">
+        {rows.map((row, r) => (
+          <div
+            key={r}
+            className="grid gap-[clamp(16px,1.8vw,36px)]"
+            style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+          >
+            {row.map((service, c) => (
+              <ServiceTile
+                key={service.id}
+                service={service}
+                index={r * columns + c}
+                focused={r === focus.r && c === focus.c && !settingsOpen}
+                onPoint={() => setFocus({ r, c })}
+                onActivate={() => launch(service)}
+              />
+            ))}
+          </div>
+        ))}
       </section>
 
-      <footer className="relative flex shrink-0 items-end justify-between pt-[clamp(12px,2.4vh,36px)] text-ink/60">
+      <footer className="relative flex shrink-0 items-end justify-between pt-[clamp(12px,2vh,30px)] text-ink/60">
         <div className="hand flex items-center gap-[clamp(12px,1.5vw,30px)] text-[1.15vw] max-[900px]:text-sm">
           <Hint keys="← →" label="pick one" />
           <Hint keys="OK" label="watch it" />
           <Hint keys="↓" label="housekeeping" />
         </div>
         <p className="hand text-[1.05vw] text-ink/45 max-[900px]:text-xs">
-          the <Key>home</Key> button — or <Key>super</Key>+<Key>esc</Key> — brings you back here
+          <Key>home</Key> comes back here · <Key>e</Key> steps back
         </p>
       </footer>
 

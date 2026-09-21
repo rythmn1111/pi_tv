@@ -20,7 +20,6 @@ else
   # straight back.
   pkill -f "pi-tv-kiosk.sh" 2>/dev/null || true
   sleep 0.3
-  pkill -f -- "--class=pi-tv-launcher" 2>/dev/null || true
-  pkill -f -- "--class=pi-tv-service" 2>/dev/null || true
+  pkill -f -- "--class=pi-tv" 2>/dev/null || true
   pi_tv_notify "Desktop mode" "Press the envelope button on the remote to return to Pi TV"
 fi

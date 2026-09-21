@@ -15,10 +15,10 @@ export type Service = {
   /** Optional per-service user agent override. */
   userAgent?: string;
   /**
-   * Kiosk (the default) is fullscreen with no browser UI at all. Set false
-   * for the general browser tile, which needs a visible address bar.
+   * Which row the tile sits on. Everything defaults to row 1; put utilities
+   * on row 2 so a long line-up does not squash into one strip.
    */
-  kiosk?: boolean;
+  row?: 1 | 2;
   enabled?: boolean;
 };
 
@@ -59,12 +59,12 @@ export const DEFAULT_SERVICES: Service[] = [
   {
     id: "browser",
     name: "Browser",
-    tagline: "Everywhere else on the web",
+    tagline: "Search the web, or anywhere else you fancy",
     url: "https://www.google.com",
     color: "#D98324",
     colorTo: "#8C4A12",
     verb: "browsing",
-    kiosk: false,
+    row: 2,
   },
 ];
 

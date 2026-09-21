@@ -258,7 +258,7 @@ export function Launcher({ services }: { services: Service[] }) {
           <Hint keys="↓" label="housekeeping" />
         </div>
         <p className="hand text-[1.05vw] text-ink/45 max-[900px]:text-xs">
-          the <Key>⌂</Key> button — or <Key>super</Key>+<Key>esc</Key> — brings you back here
+          the <Key>home</Key> button — or <Key>super</Key>+<Key>esc</Key> — brings you back here
         </p>
       </footer>
 

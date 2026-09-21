@@ -10,7 +10,7 @@ export type SettingsAction = {
 
 export const SETTINGS_ACTIONS: SettingsAction[] = [
   { id: "close", label: "Never mind", hint: "Back to the page" },
-  { id: "desktop", label: "Exit to the desktop", hint: "The ✉ button on the remote brings you back" },
+  { id: "desktop", label: "Exit to the desktop", hint: "The envelope button on the remote brings you back" },
   { id: "restart-app", label: "Restart media center", hint: "Reload the launcher" },
   { id: "reboot", label: "Reboot the Pi", hint: "Full system restart" },
   { id: "shutdown", label: "Shut down the Pi", hint: "Power off safely" },

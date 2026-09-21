@@ -150,6 +150,6 @@ cat <<DONE
   Back home     Super+Escape from inside any streaming service
 
   Reload the compositor to pick up the hotkey and autostart:
-    labwc --reconfigure      # hotkeys only
+    kill -HUP \$(pgrep -x labwc)      # hotkeys only
     sudo systemctl restart lightdm    # full restart, takes you to the kiosk
 DONE

@@ -23,6 +23,12 @@ pi_tv_chromium() {
 
 # Flags shared by the launcher and every service window.
 pi_tv_common_flags() {
+  # Chromium's ozone default is X11, and it will bail with "Missing X server"
+  # on a Wayland-only session no matter what WAYLAND_DISPLAY says, so the
+  # backend has to be named explicitly.
+  if [[ -S "$XDG_RUNTIME_DIR/${WAYLAND_DISPLAY:-}" ]]; then
+    printf '%s\n' --ozone-platform=wayland
+  fi
   printf '%s\n' \
     --no-first-run \
     --no-default-browser-check \

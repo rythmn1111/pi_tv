@@ -47,6 +47,10 @@ pi_tv_common_flags() {
   if [[ -S "$XDG_RUNTIME_DIR/${WAYLAND_DISPLAY:-}" ]]; then
     printf '%s\n' --ozone-platform=wayland
   fi
+  # MediaRouter runs Chromium's own mDNS responder for Cast discovery. Left
+  # on, it fights avahi - two stacks bound to 224.0.0.251:5353 - and the Pi
+  # stops answering to <host>.local on the LAN. Pi OS's own desktop launcher
+  # passes --media-router=0 for exactly this reason.
   printf '%s\n' \
     --no-first-run \
     --no-default-browser-check \
@@ -54,9 +58,10 @@ pi_tv_common_flags() {
     --disable-infobars \
     --hide-crash-restore-bubble \
     --autoplay-policy=no-user-gesture-required \
-    --disable-features=TranslateUI,Translate \
     --password-store=basic \
-    --check-for-update-interval=31536000
+    --check-for-update-interval=31536000 \
+    --media-router=0 \
+    --disable-features=TranslateUI,Translate,MediaRouter
 }
 
 # SingletonLock is a symlink to host-PID. A stale one left by a crash stops

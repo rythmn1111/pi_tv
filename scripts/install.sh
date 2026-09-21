@@ -50,6 +50,12 @@ for SRC in "$HOME/.config/chromium/WidevineCdm" /opt/WidevineCdm; do
 done
 [[ -d "$STATE/profiles/services/WidevineCdm" ]] || warn "no Widevine CDM found - DRM services may not play"
 
+# A TV has no business asking about the camera. Seed each profile's content
+# settings to "block" so the desktop portal never throws a modal over a film.
+python3 "$HERE/seed-profile-prefs.py" "$STATE/profiles/launcher" "$STATE/profiles/services" \
+  && ok "camera / mic / notification prompts blocked" \
+  || warn "could not seed profile preferences"
+
 # -------------------------------------------------------------- systemd ------
 say "Web server service"
 mkdir -p "$UNIT_DIR"

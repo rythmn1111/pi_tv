@@ -6,7 +6,7 @@ import { runSystemAction, type SystemAction } from "@/lib/launcher";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const ALLOWED: SystemAction[] = ["reboot", "shutdown", "restart-app"];
+const ALLOWED: SystemAction[] = ["reboot", "shutdown", "restart-app", "desktop"];
 
 async function readCpuTemp(): Promise<number | null> {
   try {

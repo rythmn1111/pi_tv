@@ -7,6 +7,10 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=pi-tv-env.sh
 source "$HERE/pi-tv-env.sh"
 
+# While the user is on the ordinary desktop, the home and back keys belong to
+# whatever they are doing - only the envelope button leaves that mode.
+[[ -f "$PI_TV_DESKTOP_FLAG" ]] && exit 0
+
 # Matching on the profile path only ever hits service windows - the launcher
 # runs out of a different profile directory and is left alone.
 pkill -f -- "--user-data-dir=$PI_TV_SERVICE_PROFILE" 2>/dev/null || true

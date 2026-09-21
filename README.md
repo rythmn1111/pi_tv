@@ -99,6 +99,20 @@ the focused window:
 | mute | toggle mute |
 | `▶‖` | play / pause |
 | `⏮` `⏭` | previous / next |
+| **✉ (envelope)** | **drop to the normal Pi desktop; press again to come back** |
+| `Super`+`D` | same toggle, from a keyboard |
+
+### Escaping to the desktop
+
+The Raspberry Pi desktop and taskbar run underneath the kiosk the whole time —
+the kiosk is just a fullscreen window on top. So the ✉ button doesn't start
+anything, it only moves our windows out of the way, and pressing it again puts
+them back. A toast tells you which mode you're in, and there's an
+**Exit to the desktop** item in the housekeeping panel too.
+
+While you're on the desktop the home and back keys are left alone, so they
+behave normally in whatever you're using — ✉ is the only way back to the
+kiosk. A reboot always comes up in kiosk mode regardless.
 
 Volume goes through `wpctl`, playback through `playerctl` over MPRIS — Chromium
 publishes each playing tab as an MPRIS player, so this drives Netflix, YouTube

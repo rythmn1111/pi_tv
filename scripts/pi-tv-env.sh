@@ -21,6 +21,10 @@ PI_TV_SERVICE_PROFILE="${PI_TV_SERVICE_PROFILE:-$PI_TV_STATE/profiles/services}"
 # every caller treats as fine.
 PI_TV_OSD_FIFO="${PI_TV_OSD_FIFO:-$XDG_RUNTIME_DIR/pi-tv-osd.fifo}"
 
+# Set while the user has dropped to the ordinary desktop. Lives in the runtime
+# dir so a reboot always comes back up in kiosk mode.
+PI_TV_DESKTOP_FLAG="${PI_TV_DESKTOP_FLAG:-$XDG_RUNTIME_DIR/pi-tv-desktop-mode}"
+
 pi_tv_chromium() {
   command -v chromium 2>/dev/null || command -v chromium-browser 2>/dev/null
 }
@@ -43,6 +47,13 @@ pi_tv_common_flags() {
     --disable-features=TranslateUI,Translate \
     --password-store=basic \
     --check-for-update-interval=31536000
+}
+
+# wf-panel-pi owns org.freedesktop.Notifications, so this shows a real toast
+# on the desktop. Silently does nothing if libnotify is not installed.
+pi_tv_notify() {
+  command -v notify-send >/dev/null 2>&1 || return 0
+  notify-send --app-name="Pi TV" --expire-time=5000 "$1" "${2:-}" 2>/dev/null || true
 }
 
 pi_tv_wait_for_server() {

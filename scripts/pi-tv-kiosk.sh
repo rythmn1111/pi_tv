@@ -6,6 +6,8 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=pi-tv-env.sh
 source "$HERE/pi-tv-env.sh"
 
+rm -f "$PI_TV_DESKTOP_FLAG"
+
 BROWSER="$(pi_tv_chromium)"
 if [[ -z "$BROWSER" ]]; then
   echo "pi-tv: chromium not found" >&2

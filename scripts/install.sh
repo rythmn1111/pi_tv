@@ -36,6 +36,7 @@ ok "chromium present"
 MISSING=()
 command -v playerctl >/dev/null 2>&1 || MISSING+=(playerctl)
 command -v wob >/dev/null 2>&1 || MISSING+=(wob)
+command -v notify-send >/dev/null 2>&1 || MISSING+=(libnotify-bin)
 command -v wpctl >/dev/null 2>&1 || MISSING+=(wireplumber)
 if (( ${#MISSING[@]} )); then
   if sudo -n true 2>/dev/null; then
@@ -143,6 +144,7 @@ cat <<DONE
   Logs          journalctl --user -u pi-tv -f
   Back home     Super+Escape, or the remote's house button, from anywhere
   Remote keys   volume / mute / play-pause / next / prev all work in-app
+  Desktop       the remote's envelope button toggles kiosk <-> desktop
   Unknown key?  ./scripts/pi-tv-remote-keys.sh and press it
 
   Reload the compositor to pick up the hotkey and autostart:

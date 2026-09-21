@@ -9,6 +9,10 @@ const HOME_SCRIPT =
   process.env.PI_TV_HOME_SCRIPT ??
   path.join(process.cwd(), "scripts", "pi-tv-home.sh");
 
+const DESKTOP_SCRIPT =
+  process.env.PI_TV_DESKTOP_SCRIPT ??
+  path.join(process.cwd(), "scripts", "pi-tv-desktop.sh");
+
 /**
  * The web server runs as a systemd *user* service, which may start before the
  * Wayland session exists. Pin the compositor socket so spawned windows always
@@ -45,12 +49,17 @@ export function returnHome() {
   runDetached(HOME_SCRIPT, []);
 }
 
-export type SystemAction = "reboot" | "shutdown" | "restart-app";
+export type SystemAction = "reboot" | "shutdown" | "restart-app" | "desktop";
 
 export function runSystemAction(action: SystemAction) {
+  if (action === "desktop") {
+    runDetached(DESKTOP_SCRIPT, []);
+    return;
+  }
+
   // systemctl reboot/poweroff are permitted for the local active session via
   // polkit, so no sudo is needed here.
-  const commands: Record<SystemAction, [string, string[]]> = {
+  const commands: Record<Exclude<SystemAction, "desktop">, [string, string[]]> = {
     reboot: ["systemctl", ["reboot"]],
     shutdown: ["systemctl", ["poweroff"]],
     "restart-app": ["systemctl", ["--user", "restart", "pi-tv.service"]],

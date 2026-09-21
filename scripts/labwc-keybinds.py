@@ -22,6 +22,10 @@ def q(tag: str) -> str:
 # XF86Back is its BACK key. Super+Escape is the one for a plain keyboard.
 HOME_KEYS = ["W-Escape", "W-Home", "C-A-h", "XF86HomePage", "XF86Back"]
 
+# The envelope button drops to the ordinary desktop, and brings the kiosk
+# back when pressed again.
+DESKTOP_KEYS = ["XF86Mail", "W-d"]
+
 # Bound here rather than left to Chromium so they work regardless of which
 # window has focus, and so volume can drive the on-screen bar.
 MEDIA_KEYS = {
@@ -60,6 +64,7 @@ def main() -> int:
     rc_path, scripts_dir = sys.argv[1], sys.argv[2].rstrip("/")
     home_script = f"{scripts_dir}/pi-tv-home.sh"
     media_script = f"{scripts_dir}/pi-tv-media.sh"
+    desktop_script = f"{scripts_dir}/pi-tv-desktop.sh"
 
     tree = ET.parse(rc_path)
     root = tree.getroot()
@@ -67,7 +72,7 @@ def main() -> int:
     if keyboard is None:
         keyboard = ET.SubElement(root, q("keyboard"))
 
-    managed = set(HOME_KEYS) | set(MEDIA_KEYS)
+    managed = set(HOME_KEYS) | set(DESKTOP_KEYS) | set(MEDIA_KEYS)
     removed = 0
     for keybind in list(keyboard.findall(q("keybind"))):
         ours = any("pi-tv-" in c for c in commands_of(keybind))
@@ -79,13 +84,18 @@ def main() -> int:
 
     for key in HOME_KEYS:
         bind(keyboard, key, home_script)
+    for key in DESKTOP_KEYS:
+        bind(keyboard, key, desktop_script)
     for key, action in MEDIA_KEYS.items():
         bind(keyboard, key, f"{media_script} {action}")
 
     ET.indent(tree, space="  ")
     tree.write(rc_path, encoding="UTF-8", xml_declaration=True)
 
-    print(f"  replaced {removed}, bound {len(HOME_KEYS)} home + {len(MEDIA_KEYS)} media keys")
+    print(
+        f"  replaced {removed}, bound {len(HOME_KEYS)} home"
+        f" + {len(DESKTOP_KEYS)} desktop + {len(MEDIA_KEYS)} media keys"
+    )
     return 0
 
 

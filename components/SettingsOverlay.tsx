@@ -3,13 +3,14 @@
 import { sketchRect } from "@/lib/sketch";
 
 export type SettingsAction = {
-  id: "close" | "restart-app" | "reboot" | "shutdown";
+  id: "close" | "desktop" | "restart-app" | "reboot" | "shutdown";
   label: string;
   hint: string;
 };
 
 export const SETTINGS_ACTIONS: SettingsAction[] = [
   { id: "close", label: "Never mind", hint: "Back to the page" },
+  { id: "desktop", label: "Exit to the desktop", hint: "The ✉ button on the remote brings you back" },
   { id: "restart-app", label: "Restart media center", hint: "Reload the launcher" },
   { id: "reboot", label: "Reboot the Pi", hint: "Full system restart" },
   { id: "shutdown", label: "Shut down the Pi", hint: "Power off safely" },

@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-hand: var(--font-hand);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+
+  /* Sketchbook palette */
+  --color-desk: #17130f;
+  --color-desk-2: #221c16;
+  --color-paper: #f7f0e3;
+  --color-paper-2: #efe5d4;
+  --color-ink: #c4452e;
+  --color-ink-deep: #9c3421;
+  --color-graphite: #3d332b;
+
+  --animate-rise: rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-bob: bob 6s ease-in-out infinite;
+  --animate-bob-slow: bob 9s ease-in-out infinite;
+  --animate-draw: draw 1.1s ease-out both;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes rise {
+  from { opacity: 0; transform: translate3d(0, 18px, 0) rotate(var(--tilt, 0deg)); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0) rotate(var(--tilt, 0deg)); }
 }
 
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); }
+  50%      { transform: translateY(-7px) rotate(calc(var(--tilt, 0deg) + 1.2deg)); }
+}
+
+/* Strokes draw themselves in on first paint. */
+@keyframes draw {
+  from { stroke-dashoffset: var(--len, 1200); }
+  to   { stroke-dashoffset: 0; }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+  background: var(--color-desk);
+  color: var(--color-graphite);
+  font-family: var(--font-body), Georgia, serif;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* An appliance driven by a remote - no pointer or text-selection affordances. */
+body {
+  cursor: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus,
+button:focus-visible {
+  outline: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fine graph-paper ruling, plus the warm blotches of real paper. */
+.paper-grid {
+  background-color: var(--color-paper);
+  background-image:
+    linear-gradient(rgba(196, 69, 46, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(196, 69, 46, 0.10) 1px, transparent 1px),
+    radial-gradient(ellipse at 18% 22%, rgba(196, 69, 46, 0.055), transparent 55%),
+    radial-gradient(ellipse at 82% 78%, rgba(156, 52, 33, 0.05), transparent 55%);
+  background-size: 34px 34px, 34px 34px, 100% 100%, 100% 100%;
+}
+
+.hand {
+  font-family: var(--font-hand), "Comic Sans MS", cursive;
+}
+
+.display {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 40, "WONK" 1;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
 }

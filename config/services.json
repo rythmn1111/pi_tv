@@ -1,0 +1,42 @@
+{
+  "$comment": "Edit this file to customise your media center. Changes are picked up on the next page refresh - no rebuild needed.",
+  "services": [
+    {
+      "id": "netflix",
+      "name": "Netflix",
+      "tagline": "Films, series and everything in between",
+      "url": "https://www.netflix.com",
+      "color": "#E50914",
+      "colorTo": "#7B0710",
+      "enabled": true
+    },
+    {
+      "id": "prime",
+      "name": "Prime Video",
+      "tagline": "Included with your Amazon Prime membership",
+      "url": "https://www.primevideo.com",
+      "color": "#1FA2FF",
+      "colorTo": "#0B5C9E",
+      "enabled": true
+    },
+    {
+      "id": "jiohotstar",
+      "name": "JioHotstar",
+      "tagline": "Live sport, Indian cinema and originals",
+      "url": "https://www.hotstar.com/in",
+      "color": "#E8318A",
+      "colorTo": "#6D2BE0",
+      "enabled": true
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "tagline": "Everything the internet has to offer",
+      "url": "https://www.youtube.com",
+      "color": "#FF0033",
+      "colorTo": "#A3000F",
+      "enabled": true,
+      "$tip": "For the 10-foot remote-friendly YouTube interface, set url to https://www.youtube.com/tv and userAgent to the Smart TV string documented in the README."
+    }
+  ]
+}
